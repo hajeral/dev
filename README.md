@@ -1,15 +1,14 @@
-# What is this?
+# Financial Forecasting Tool
 
-The github.dev web-based editor is a lightweight editing experience that runs entirely in your browser. You can navigate files and source code repositories from GitHub, and make and commit code changes.
+A simple Streamlit app to upload Excel sheets (with capital, salary, OPEX, revenue data) and view them.
 
-There are two ways to go directly to a VS Code environment in your browser and start coding:
+## How to Deploy on Streamlit Cloud
 
-* Press the . key on any repository or pull request.
-* Swap `.com` with `.dev` in the URL. For example, this repo https://github.com/github/dev becomes http://github.dev/github/dev
+1. Fork or clone this repo.
+2. Go to https://streamlit.io/cloud
+3. Click 'Create new app'
+4. Point it to this GitHub repo
+5. Your app will be live with a link like: https://yourname.streamlit.app
 
-Preview the gif below to get a quick demo of github.dev in action.
-
-![github dev](https://user-images.githubusercontent.com/856858/130119109-4769f2d7-9027-4bc4-a38c-10f297499e8f.gif)
-
-# Why?
-It’s a quick way to edit and navigate code. It's especially useful if you want to edit multiple files at a time or take advantage of all the powerful code editing features of Visual Studio Code when making a quick change. For more information, see our [documentation](https://github.co/codespaces-editor-help).
+## File Requirements
+- Upload an Excel file (.xlsx) with multiple sheets (named like "Capital", "OPEX", etc.)
