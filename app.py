@@ -36,7 +36,8 @@ df["Cumulative Profit"] = df["Net Profit"].cumsum()
 
 # Display Results
 st.subheader("📈 Forecast Table")
-st.dataframe(df.style.format("${:,.0f}"))
+numeric_cols = df.select_dtypes(include='number').columns
+st.dataframe(df.style.format({col: "${:,.0f}" for col in numeric_cols}))
 
 # Break-even
 breakeven = df[df["Cumulative Profit"] > 0]
