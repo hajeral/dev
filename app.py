@@ -1,48 +1,39 @@
 import streamlit as st
 import pandas as pd
+import io
 
-st.set_page_config(layout="wide", page_title="Financial Forecast App")
+st.set_page_config(page_title="Finance Forecast App", layout="wide")
 
 st.title("📊 Financial Forecast & Break-Even Analysis")
 
-# Sidebar Inputs
-st.sidebar.header("💰 Input Assumptions")
+# File Upload
+uploaded_file = st.file_uploader("📁 Upload Financial Data (CSV or Excel)", type=["csv", "xlsx"])
 
-capex = st.sidebar.number_input("Total CapEx (one-time)", value=2140000, step=10000)
-salary_q = st.sidebar.number_input("Quarterly Salary Expense", value=250000, step=10000)
-opex_q = st.sidebar.number_input("Quarterly Operating Expense", value=100000, step=5000)
-revenue_q = st.sidebar.number_input("Quarterly Revenue (Start)", value=600000, step=10000)
-growth_rate = st.sidebar.slider("Quarterly Revenue Growth Rate (%)", 0, 100, 20)
+if uploaded_file:
+    # Handle Excel or CSV
+    if uploaded_file.name.endswith('.csv'):
+        df = pd.read_csv(uploaded_file)
+    else:
+        sheets = pd.read_excel(uploaded_file, sheet_name=None)
+        sheet = st.selectbox("Select Sheet", list(sheets.keys()))
+        df = sheets[sheet]
 
-# Generate data for 12 quarters (3 years)
-quarters = [f"Q{(i%4)+1} Y{(i//4)+1}" for i in range(12)]
-revenues = [revenue_q * ((1 + growth_rate/100) ** i) for i in range(12)]
-salary_exp = [salary_q]*12
-opex_exp = [opex_q]*12
-capex_exp = [capex if i == 0 else 0 for i in range(12)]
+    st.subheader("📂 Uploaded Data Preview")
+    st.dataframe(df.head())
 
-# Create DataFrame
-df = pd.DataFrame({
-    "Quarter": quarters,
-    "Revenue": revenues,
-    "Salaries": salary_exp,
-    "OPEX": opex_exp,
-    "CAPEX": capex_exp
-})
+    st.success("✅ File loaded successfully. Start configuring your forecast.")
+    
+    # Placeholder summary
+    st.markdown("## 🔍 Forecast Modules (auto-generated)")
+    st.markdown("""
+    - 📆 **Pro Forma Reports**: Monthly, Quarterly, Yearly  
+    - 💸 **Burn Rate + Funding Forecast**  
+    - 📈 **Break-even Analysis** (Operational, Cash Flow, Investment Recovery)  
+    - 🔁 **Sensitivity Analysis** (Conservative, Base, Optimistic, Pessimistic)  
+    - 📤 **Export** results to Excel or PDF  
+    """)
 
-df["Total Cost"] = df["Salaries"] + df["OPEX"] + df["CAPEX"]
-df["Net Profit"] = df["Revenue"] - df["Total Cost"]
-df["Cumulative Profit"] = df["Net Profit"].cumsum()
+    st.info("Coming next: data mapping, forecast logic, export buttons.")
 
-# Display Results
-st.subheader("📈 Forecast Table")
-numeric_cols = df.select_dtypes(include='number').columns
-st.dataframe(df.style.format({col: "${:,.0f}" for col in numeric_cols}))
-
-# Break-even
-breakeven = df[df["Cumulative Profit"] > 0]
-if not breakeven.empty:
-    st.success(f"🎯 Break-even reached in: **{breakeven.iloc[0]['Quarter']}**")
 else:
-    st.warning("❌ Break-even not reached within 3 years.")
-
+    st.warning("⚠️ Upload your Excel or CSV file to get started.")
