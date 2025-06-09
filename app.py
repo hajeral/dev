@@ -1,33 +1,47 @@
 import streamlit as st
 import pandas as pd
 
-st.set_page_config(layout="wide")
-st.title("📊 Financial Forecast & Break-Even")
+st.set_page_config(layout="wide", page_title="Financial Forecast App")
 
-st.sidebar.header("Input Financials")
+st.title("📊 Financial Forecast & Break-Even Analysis")
 
-capex = st.sidebar.number_input("Total CapEx ($)", value=2140000)
-salary_q = st.sidebar.number_input("Quarterly Salary ($)", value=250000)
-opex_q = st.sidebar.number_input("Quarterly OpEx ($)", value=100000)
-revenue_q = st.sidebar.number_input("Quarterly Revenue ($)", value=600000)
+# Sidebar Inputs
+st.sidebar.header("💰 Input Assumptions")
 
-quarters = [f"Q{i+1} Y1" for i in range(4)]
+capex = st.sidebar.number_input("Total CapEx (one-time)", value=2140000, step=10000)
+salary_q = st.sidebar.number_input("Quarterly Salary Expense", value=250000, step=10000)
+opex_q = st.sidebar.number_input("Quarterly Operating Expense", value=100000, step=5000)
+revenue_q = st.sidebar.number_input("Quarterly Revenue (Start)", value=600000, step=10000)
+growth_rate = st.sidebar.slider("Quarterly Revenue Growth Rate (%)", 0, 100, 20)
+
+# Generate data for 12 quarters (3 years)
+quarters = [f"Q{(i%4)+1} Y{(i//4)+1}" for i in range(12)]
+revenues = [revenue_q * ((1 + growth_rate/100) ** i) for i in range(12)]
+salary_exp = [salary_q]*12
+opex_exp = [opex_q]*12
+capex_exp = [capex if i == 0 else 0 for i in range(12)]
+
+# Create DataFrame
 df = pd.DataFrame({
     "Quarter": quarters,
-    "Revenue": [revenue_q]*4,
-    "Salary": [salary_q]*4,
-    "OPEX": [opex_q]*4,
-    "CAPEX": [capex/4]*4
+    "Revenue": revenues,
+    "Salaries": salary_exp,
+    "OPEX": opex_exp,
+    "CAPEX": capex_exp
 })
-df["Total Cost"] = df["Salary"] + df["OPEX"] + df["CAPEX"]
+
+df["Total Cost"] = df["Salaries"] + df["OPEX"] + df["CAPEX"]
 df["Net Profit"] = df["Revenue"] - df["Total Cost"]
 df["Cumulative Profit"] = df["Net Profit"].cumsum()
 
-st.subheader("📈 Financial Table")
-st.dataframe(df)
+# Display Results
+st.subheader("📈 Forecast Table")
+st.dataframe(df.style.format("${:,.0f}"))
 
-breakeven = df[df["Cumulative Profit"] > 0].head(1)
+# Break-even
+breakeven = df[df["Cumulative Profit"] > 0]
 if not breakeven.empty:
-    st.success(f"🎯 Break-even in: {breakeven['Quarter'].values[0]}")
+    st.success(f"🎯 Break-even reached in: **{breakeven.iloc[0]['Quarter']}**")
 else:
-    st.warning("Break-even not reached.")
+    st.warning("❌ Break-even not reached within 3 years.")
+
